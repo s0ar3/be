@@ -1,2 +1,2 @@
 # be
-Checker for tool existance and then displays the package that contains it.
+Checker for tool existence and then displays the package that contains it.
