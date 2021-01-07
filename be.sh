@@ -73,7 +73,7 @@ generate_banner() {
   local edge
   msg="|         ${1}         |"
   edge=$(printf "%s" "${msg}" | awk 'gsub(".","-",$0)')
-  printf "\n\e[38;5;113m"
+  printf "\e[38;5;113m"
   printf " %s\n" "${edge}"
   printf "%s\n %s\n" " ${msg}" "|      $(date "+%X %x")       |"
   printf " %s\n" "${edge}"
@@ -117,14 +117,14 @@ main() {
 logging_output() {
     content=$1
 
-    [[ ! -d ./log_files ]] && { mkdir ./log_files; }
-    [[ ! -e ./log_files/be.log ]] && { touch ./log_files/be.log; printf "%105s\n" " " | tr ' ' '-' >> ./log_files/be.log; }
+    [[ ! -d /var/log/be ]] && { mkdir -p /var/log/be; }
+    [[ ! -e /var/log/be/be.log ]] && { touch /var/log/be/be.log; printf "%105s\n" " " | tr ' ' '-' >> /var/log/be/be.log; }
 
     printf "%s\n" "${content}" | while read -r line_input; do
-        printf "$(date) %s\n" "${line_input}" | awk 'gsub(/\|/,"")' >> ./log_files/be.log
+        printf "$(date) %s\n" "${line_input}" | awk 'gsub(/\|/,"")' >> /var/log/be/be.log
     done
 
-    printf "%105s\n" " " | tr ' ' '-' >> ./log_files/be.log
+    printf "%105s\n" " " | tr ' ' '-' >> /var/log/be/be.log
 }
 
 # Run the functions mentioned above and first as you can see output is put in variable $output_main
@@ -132,7 +132,7 @@ logging_output() {
 
 sanityChecks "$@"
 
-printf "%s" "${INV_CURSOR}"
+printf "%s\n" "${INV_CURSOR}"
 
 generate_banner "toBE-checker v0.1"
 progress_dots "0.5" "." " Searching" &
