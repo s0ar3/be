@@ -11,6 +11,15 @@
 INV_CURSOR=$(tput civis)
 NRM_CURSOR=$(tput cnorm)
 
+#Checking number of parameters to see if we have any input to check.
+
+sanityChecks() {
+    if [[ ${#} -lt 1 ]]; then
+        printf "\n\e[31m%s\e[0m\n\n" " **No arguments given. We need at least one name of a tool to check if it is installed."
+        exit
+    fi
+}
+
 #Progress bar starter with message, sleep and progress character.
 
 progress_dots() {
@@ -34,7 +43,7 @@ progress_dots() {
 endProgress_dots() {
     local printed_message="$1"
     local -a results
-
+    
     kill "${!}"
     wait "${!}" 2> /dev/null
     sleep 0.1
@@ -51,10 +60,10 @@ endProgress_dots() {
 
     for ((i=0; i<${#results[@]}; i++)) do
         printf "%s\n" "${results[i]}"
-        sleep 0.3
+        if [[ $i -eq ${#results[@]}-2 ]]; then
+            printf "%74s\n\n" " " | tr " " "-"
+        fi       
     done
-
-    printf "%74s\n\n" " " | tr " " "-"
 }
 
 #Banner generation with green color, date and name of the script and version :P
@@ -63,7 +72,7 @@ generate_banner() {
   local msg 
   local edge
   msg="|         ${1}         |"
-  edge=$(printf "%s" "${msg}" | sed 's/./-/g')
+  edge=$(printf "%s" "${msg}" | awk 'gsub(".","-",$0)')
   printf "\n\e[38;5;113m"
   printf " %s\n" "${edge}"
   printf "%s\n %s\n" " ${msg}" "|      $(date "+%X %x")       |"
@@ -81,10 +90,10 @@ find_package_complete() {
     printf "|\e[32m %-8s\e[0m |\e[32m %-14s\e[0m| %-19s| %-25s|\n" "✔" "${item_searched}" "${package}" "${version}"
 }
 
-
 # Execute finding the package begin with the name of the tool in /usr/bin.
 
 main() {
+    declare -x not_installed=0
     for i in "$@"; do
         if tool_installed=$(which "${i}" 2> /dev/null); then
             if find_pckg=$(rpm -qf "${tool_installed}"); then
@@ -94,16 +103,41 @@ main() {
             fi
         else
             printf "|\e[31m %-9s\e[0m| \e[31m%-14s\e[0m| %-19s| %-24s %s\n" "✘" "${i}" "not installed" "none" "|"
+            ((not_installed++))
         fi
     done
+
+    if [[ ${not_installed} -gt 0 ]]; then
+        printf "\e[31m%s\e[0m" "Sript terminated! (${not_installed} tool(s) not installed.)"
+    else
+        printf "\e[32m%s\e[0m" "Sript terminated! (All tools installed.)"
+    fi
+}
+
+logging_output() {
+    content=$1
+
+    [[ ! -d ./log_files ]] && { mkdir ./log_files; }
+    [[ ! -e ./log_files/be.log ]] && { touch ./log_files/be.log; printf "%105s\n" " " | tr ' ' '-' >> ./log_files/be.log; }
+
+    printf "%s\n" "${content}" | while read -r line_input; do
+        printf "$(date) %s\n" "${line_input}" | awk 'gsub(/\|/,"")' >> ./log_files/be.log
+    done
+
+    printf "%105s\n" " " | tr ' ' '-' >> ./log_files/be.log
 }
 
 # Run the functions mentioned above and first as you can see output is put in variable $output_main
 # and then in function called endProgress_dots this output is put into an array and displayed in the table
 
+sanityChecks "$@"
+
 printf "%s" "${INV_CURSOR}"
+
 generate_banner "toBE-checker v0.1"
 progress_dots "0.5" "." " Searching" &
 output_main="$(main "$@")"
 endProgress_dots "${output_main}"
-printf "%s" "${NRM_CURSOR}"
+logging_output "${output_main}"
+
+printf "%s\n" "${NRM_CURSOR}"
