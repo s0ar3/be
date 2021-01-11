@@ -54,14 +54,14 @@ endProgress_dots() {
         results+=("${line}")
     done <<< "${printed_message}"
 
-    printf "%74s\n" " " | tr " " "-"
-    printf "| %-6s |%-14s |%-20s|%-25s %s\n" "STATUS" " QUERY" " PACKAGE" " VERSION & RELEASE" "|"
-    printf "%74s\n" " " | tr " " "-"
+    printf "%85s\n" " " | tr " " "-"
+    printf "| %-6s |%-14s |%-28s|%-28s %s\n" "STATUS" " QUERY" " PACKAGE" " VERSION & RELEASE" "|"
+    printf "%85s\n" " " | tr " " "-"
 
     for ((i=0; i<${#results[@]}; i++)) do
         printf "%s\n" "${results[i]}"
         if [[ $i -eq ${#results[@]}-2 ]]; then
-            printf "%74s\n\n" " " | tr " " "-"
+            printf "%85s\n\n" " " | tr " " "-"
         fi       
     done
 }
@@ -87,7 +87,7 @@ find_package_complete() {
     local item_searched="${2}"
     package=$(yum list installed "${input}" | awk 'NR==2{print $1}')
     version=$(yum list installed "${input}" | awk 'NR==2{print $2}')
-    printf "|\e[32m %-8s\e[0m |\e[32m %-14s\e[0m| %-19s| %-25s|\n" "✔" "${item_searched}" "${package}" "${version}"
+    printf "|\e[32m %-8s\e[0m |\e[32m %-14s\e[0m| %-27s| %-28s|\n" "✔" "${item_searched}" "${package}" "${version}"
 }
 
 # Execute finding the package begin with the name of the tool in /usr/bin.
@@ -95,14 +95,16 @@ find_package_complete() {
 main() {
     declare -x not_installed=0
     for i in "$@"; do
-        if tool_installed=$(which "${i}" 2> /dev/null); then
+        tool_installed=$(find /usr/bin /usr/sbin /opt -executable -type f -regextype posix-awk -iregex ".*/${i}" 2> /dev/null)
+        exit_code=$?
+        if [[ ("${exit_code}" -eq 0) && (-n "${tool_installed}")  ]] ; then
             if find_pckg=$(rpm -qf "${tool_installed}"); then
                 find_package_complete "${find_pckg}" "${i}"
             else
                 find_package_complete "${i}" "${i}"
             fi
         else
-            printf "|\e[31m %-9s\e[0m| \e[31m%-14s\e[0m| %-19s| %-24s %s\n" "✘" "${i}" "not installed" "none" "|"
+            printf "|\e[31m %-9s\e[0m| \e[31m%-14s\e[0m| %-27s| %-27s %s\n" "✘" "${i}" "not installed" "none" "|"
             ((not_installed++))
         fi
     done
@@ -113,6 +115,8 @@ main() {
         printf "\e[32m%s\e[0m" "Sript terminated! (All tools installed.)"
     fi
 }
+
+# Generate logging file in /var/log/be
 
 logging_output() {
     content=$1
