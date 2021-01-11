@@ -93,7 +93,7 @@ find_package_complete() {
 # Execute finding the package begin with the name of the tool in /usr/bin.
 
 main() {
-    declare -x not_installed=0
+    declare -x not_installed
     for i in "$@"; do
         tool_installed=$(find /usr/bin /usr/sbin /opt -executable -type f -regextype posix-awk -iregex ".*/${i}" 2> /dev/null)
         exit_code=$?
