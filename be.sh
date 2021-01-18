@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Name: toBE-checker
-# Version: 0.1
+# Version: 0.2
 # Author: s0ar3 (Valentin Soare)
 # Github: https://github.com/s0ar3/be
 # Short description: Check tool existance and then displays the package that contains it or not.
@@ -124,9 +124,9 @@ logging_output() {
     [[ ! -d /var/log/be ]] && { mkdir -p /var/log/be; }
     [[ ! -e /var/log/be/be.log ]] && { touch /var/log/be/be.log; printf "%105s\n" " " | tr ' ' '-' >> /var/log/be/be.log; }
 
-    printf "%s\n" "${content}" | while read -r line_input; do
+    while read -r line_input; do
         printf "$(date) %s\n" "${line_input}" | awk 'gsub(/\|/,"")' >> /var/log/be/be.log
-    done
+    done <<< "${content}"
 
     printf "%105s\n" " " | tr ' ' '-' >> /var/log/be/be.log
 }
@@ -138,7 +138,7 @@ sanityChecks "$@"
 
 printf "%s\n" "${INV_CURSOR}"
 
-generate_banner "toBE-checker v0.1"
+generate_banner "toBE-checker v0.2"
 progress_dots "0.5" "." " Searching" &
 output_main="$(main "$@")"
 endProgress_dots "${output_main}"
