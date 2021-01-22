@@ -1,17 +1,7 @@
 #!/bin/bash
 
-# Name: toBE-checker
-# Version: 0.2
-# Author: s0ar3 (Valentin Soare)
-# Github: https://github.com/s0ar3/be
-# Short description: Check tool existance and then displays the package that contains it or not.
-
-#Set cursor invisible and back.
-
 INV_CURSOR=$(tput civis)
 NRM_CURSOR=$(tput cnorm)
-
-#Checking number of parameters to see if we have any input to check.
 
 sanityChecks() {
     if [[ ${#} -lt 1 ]]; then
@@ -19,8 +9,6 @@ sanityChecks() {
         exit
     fi
 }
-
-#Progress bar starter with message, sleep and progress character.
 
 progress_dots() {
     local sleepTime="${1}"
@@ -36,9 +24,6 @@ progress_dots() {
 
     trap 'kill $!' SIGTERM
 }
-
-#Function used to convert the output from a string variable into an array 
-#and then print the output and put it nicely into a table.
 
 endProgress_dots() {
     local printed_message="$1"
@@ -66,8 +51,6 @@ endProgress_dots() {
     done
 }
 
-#Banner generation with green color, date and name of the script and version :P
-
 generate_banner() {
   local msg 
   local edge
@@ -80,8 +63,6 @@ generate_banner() {
   printf "\e[0m\n"
 }
 
-#Print the name of the package and contains the query and its version/release.
-
 find_package_complete() {
     local input="${1}"
     local item_searched="${2}"
@@ -89,8 +70,6 @@ find_package_complete() {
     version=$(yum list installed "${input}" | awk 'NR==2{print $2}')
     printf "|\e[32m %-8s\e[0m |\e[32m %-14s\e[0m| %-27s| %-28s|\n" "✔" "${item_searched}" "${package}" "${version}"
 }
-
-# Execute finding the package begin with the name of the tool in /usr/bin.
 
 main() {
     declare -x not_installed
@@ -116,8 +95,6 @@ main() {
     fi
 }
 
-# Generate logging file in /var/log/be
-
 logging_output() {
     content=$1
 
@@ -130,9 +107,6 @@ logging_output() {
 
     printf "%105s\n" " " | tr ' ' '-' >> /var/log/be/be.log
 }
-
-# Run the functions mentioned above and first as you can see output is put in variable $output_main
-# and then in function called endProgress_dots this output is put into an array and displayed in the table
 
 sanityChecks "$@"
 
