@@ -34,7 +34,7 @@ endProgress_dots() {
     sleep 0.1
     printf "%s\n\n" "DONE"
     sleep 0.5
-
+    
     while IFS=$'\n' read -r line; do
         results+=("${line}")
     done <<< "${printed_message}"
